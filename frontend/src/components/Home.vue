@@ -3,27 +3,44 @@
         <h1>Home Page</h1>
         <h3>Currently playing:</h3>
         <div id="currentSong">
-            <span>{{ currentSong[0].id }}</span>
-            <span>{{ currentSong[0].artist }}</span>
-            <span>{{ currentSong[0].album }}</span>
-            <span>{{ currentSong[0].title }}</span>
+            <template v-if="!currentSong.rate">
+                <span>{{ currentSong.pos }}</span>
+                <span>{{ currentSong.artist }}</span>
+                <span>{{ currentSong.album }}</span>
+                <span>{{ currentSong.title }}</span>
+                <span>none</span>
+            </template>
+            <template v-else>
+                <span>{{ currentSong.pos }}</span>
+                <span>{{ currentSong.artist }}</span>
+                <span>{{ currentSong.album }}</span>
+                <span>{{ currentSong.title }}</span>
+                <span>
+                  <span v-for="n in Number(currentSong.rate)" :key="n">
+                     *
+                  </span>
+                </span>
+            </template>
         </div>
+        <br>
+        <Playlist />
     </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
-
+import { mapGetters } from 'vuex'
+import Playlist from './Playlist.vue'
 export default{
   name: 'Home',
+  components: {
+    Playlist
+  },
   computed: {
-    ...mapGetters(['currentSong'])
+    ...mapGetters(['currentSong', 'connection'])
   },
   methods: {
-    ...mapActions(['fetch'])
   },
   created () {
-    this.fetch()
   }
 }
 </script>

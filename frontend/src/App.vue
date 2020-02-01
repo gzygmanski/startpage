@@ -5,8 +5,15 @@
 </template>
 
 <script>
+import Home from './components/Home.vue'
+import Playlist from './components/Playlist.vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    Home,
+    Playlist
+  }
 }
 </script>
 

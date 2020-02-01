@@ -1,24 +1,28 @@
-import axios from 'axios'
-
-const apiURI = 'http://localhost:5000/api/v1/resources/currentsong'
-
 const state = {
-  song: []
+  song: {},
+  isConnected: false
 }
 
 const getters = {
-  currentSong: (state) => state.song
+  currentSong: (state) => state.song,
+  connection: (state) => state.isConnected
 }
 
 const actions = {
-  async fetch ({commit}) {
-    const response = await axios.get(apiURI)
-    commit('getSong', response.data)
-  }
 }
 
 const mutations = {
-  getSong: (state, song) => (state.song.push(song))
+  SOCKET_CONNECT: (state) => {
+    state.isConnected = true
+    console.log('Client connected')
+  },
+  SOCKET_DISCONNECT: (state) => {
+    state.isConnected = false
+    console.log('Client disconnected')
+  },
+  SOCKET_CURRENTSONG: (state, data) => {
+    state.song = data
+  }
 }
 
 export default {
