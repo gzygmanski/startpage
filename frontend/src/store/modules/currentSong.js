@@ -9,6 +9,12 @@ const getters = {
 }
 
 const actions = {
+  mpdNext () {
+    this._vm.$socket.client.emit('mpd_next')
+  },
+  mpdPrevious () {
+    this._vm.$socket.client.emit('mpd_previous')
+  }
 }
 
 const mutations = {

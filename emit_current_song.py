@@ -10,25 +10,24 @@ def init_mpd_client(host='localhost', port=6600):
     client.connect(host, port)
     return client
 
+def emit_with_rating(client, currentsong):
+    try:
+        ratingValue = client.sticker_get("song", currentsong["file"], "stars")
+    except:
+        print('Sticker not found')
+        ratingValue = 0
+    finally:
+        currentsong["rate"] = ratingValue
+        socket.emit('currentsong', currentsong, namespace='/api')
+
 def emit_current_song():
     client = init_mpd_client()
 
     while True:
         client.idle("player", "sticker")
         currentsong = client.currentsong()
+        emit_with_rating(client, currentsong)
 
-        try:
-            ratingValue = client.sticker_get("song", currentsong["file"], "stars")
-        except:
-            ratingValue = 0
-            print('Sticker not found')
-        finally:
-            currentsong["rate"] = ratingValue
-            socket.emit('currentsong', currentsong, namespace='/api')
-    # while True:
-    #     client.idle("player")
-    #     socket.emit('currentsong', client.currentsong(), namespace='/api')
-    #     print('Emited song')
     client.close()
     client.disconnect()
 

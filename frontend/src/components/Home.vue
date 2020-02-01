@@ -3,6 +3,7 @@
         <h1>Home Page</h1>
         <h3>Currently playing:</h3>
         <div id="currentSong">
+            <button v-on:click="mpdPrevious()">Previous</button>
             <template v-if="!currentSong.rate">
                 <span>{{ currentSong.pos }}</span>
                 <span>{{ currentSong.artist }}</span>
@@ -21,6 +22,7 @@
                   </span>
                 </span>
             </template>
+            <button v-on:click="mpdNext()">Next</button>
         </div>
         <br>
         <Playlist />
@@ -28,7 +30,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import Playlist from './Playlist.vue'
 export default{
   name: 'Home',
@@ -39,6 +41,7 @@ export default{
     ...mapGetters(['currentSong', 'connection'])
   },
   methods: {
+    ...mapActions(['mpdNext', 'mpdPrevious'])
   },
   created () {
   }

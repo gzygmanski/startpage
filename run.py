@@ -5,7 +5,7 @@ from mpd import MPDClient
 from time import sleep
 import redis
 import rq
-from emit_current_song import emit_current_song
+from emit_current_song import emit_current_song, emit_with_rating, init_mpd_client
 
 from eventlet import monkey_patch as monkey_patch
 monkey_patch()
@@ -20,13 +20,6 @@ socketio = SocketIO(app, cors_allowed_origins="*", message_queue='redis://localh
 
 r = redis.Redis()
 q = rq.Queue('test', connection=r)
-
-def init_mpd_client(host='localhost', port=6600):
-    client = MPDClient()
-    client.timeout = 10
-    client.idletimeout = None
-    client.connect(host, port)
-    return client
 
 @app.route('/api/v1/resources/playlist', methods=['GET'])
 def api_playlist():
@@ -45,11 +38,30 @@ def on_connect():
 def on_disconnect():
     print('Client disconnected')
 
-@app.route('/', defaults={'path': ''})
+@socketio.on('mpd_next', namespace='/api')
+def on_mpd_next():
+    client = init_mpd_client()
+    client.next()
+    client.close()
+    client.disconnect()
 
+@socketio.on('mpd_previous', namespace='/api')
+def on_mpd_previous():
+    client = init_mpd_client()
+    client.previous()
+    client.close()
+    client.disconnect()
+
+
+@app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
+    client = init_mpd_client()
+    currentsong = client.currentsong()
+    
+    emit_with_rating(client, currentsong)
     q.enqueue(emit_current_song, result_ttl=-1)
+    print(q.started_job_registry.get_job_ids())
     return render_template("index.html")
 
 if __name__ == '__main__':
