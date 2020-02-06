@@ -25,6 +25,7 @@
             <button v-on:click="mpdNext()">Next</button>
         </div>
         <br>
+        <Bookmarks />
         <Playlist />
     </div>
 </template>
@@ -32,10 +33,12 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import Playlist from './Playlist.vue'
+import Bookmarks from './Bookmarks.vue'
 export default{
   name: 'Home',
   components: {
-    Playlist
+    Playlist,
+    Bookmarks
   },
   computed: {
     ...mapGetters(['currentSong', 'connection'])
