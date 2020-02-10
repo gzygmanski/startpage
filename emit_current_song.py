@@ -1,7 +1,5 @@
 from mpd import MPDClient
 from time import sleep
-from flask_socketio import SocketIO, emit
-socket = SocketIO(message_queue = 'redis://')
 
 def init_mpd_client(host='localhost', port=6600):
     client = MPDClient()
@@ -10,7 +8,7 @@ def init_mpd_client(host='localhost', port=6600):
     client.connect(host, port)
     return client
 
-def emit_with_rating(client, currentsong):
+def emit_with_rating(client, currentsong, socket):
     try:
         ratingValue = client.sticker_get("song", currentsong["file"], "stars")
     except:
@@ -20,13 +18,13 @@ def emit_with_rating(client, currentsong):
         currentsong["rate"] = ratingValue
         socket.emit('currentsong', currentsong, namespace='/api')
 
-def emit_current_song():
+def emit_current_song(socket):
     client = init_mpd_client()
 
     while True:
         client.idle("player", "sticker")
         currentsong = client.currentsong()
-        emit_with_rating(client, currentsong)
+        emit_with_rating(client, currentsong, socket)
 
     client.close()
     client.disconnect()

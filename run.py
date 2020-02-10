@@ -1,10 +1,9 @@
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit, send
 from flask_cors import CORS
+from threading import Thread
 from mpd import MPDClient
 from time import sleep
-import redis
-import rq
 from emit_current_song import emit_current_song, emit_with_rating, init_mpd_client
 import json
 from eventlet import monkey_patch as monkey_patch
@@ -15,12 +14,9 @@ app = Flask(__name__,
     static_folder = "./dist/static",
     template_folder = "./dist")
 
-
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-socketio = SocketIO(app, cors_allowed_origins="*", message_queue='redis://localhost:6379')
-
-r = redis.Redis()
-q = rq.Queue('test', connection=r)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+running = False
 
 @app.route('/api/v1/resources/bookmarks/')
 def get_bookmarks():
@@ -106,17 +102,17 @@ def on_playpos(data):
     client.close()
     client.disconnect()
 
-
-
 @app.route('/', defaults={'path': ''})
 
 @app.route('/<path:path>')
 def catch_all(path):
+    global running
     client = init_mpd_client()
     currentsong = client.currentsong()
-    
-    emit_with_rating(client, currentsong)
-    q.enqueue(emit_current_song, result_ttl=-1)
+    emit_with_rating(client, currentsong, socketio) 
+    if not running:
+        process = socketio.start_background_task(emit_current_song, socketio)
+        running = process.is_alive()
     return render_template("index.html")
 
 if __name__ == '__main__':
