@@ -102,6 +102,7 @@ def on_playpos(data):
     client = init_mpd_client()
     client.clear()
     client.load(data) 
+    client.play(0)
     client.close()
     client.disconnect()
 
